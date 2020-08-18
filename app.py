@@ -10,10 +10,7 @@ import torch
 from PIL import Image
 from torchvision import transforms
 
-from hidt.networks.enhancement.RRDBNet_arch import RRDBNet
 from hidt.style_transformer import StyleTransformer
-from hidt.utils.preprocessing import GridCrop, enhancement_preprocessing
-from hidt.utils.io import save_img
 
 
 config_path = './configs/daytime.yaml'
@@ -163,4 +160,5 @@ def main():
     return render_template('index.html')
 
 if __name__ == "__main__":
-    app.run(debug=False, port=80, host='0.0.0.0')
+    from waitress import serve
+    serve(app, host='0.0.0.0', port=80)
