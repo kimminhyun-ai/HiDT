@@ -1,0 +1,61 @@
+openapi: 3.0.1
+
+info:
+  title: ainize-HiDT-swagger
+  description: |
+    High-Resolution Daytime Translation Without Domain Labels
+    ---
+      How to use:
+      * Select a daytime
+      * Select a landscape image
+      * Execute and wait little time
+  contact:
+    name: Ainizer - Sangil Park
+  version: "0.1"
+  license:
+    name: "BSD 3-Clause License"
+    url: https://github.com/saic-mdal/HiDT/blob/master/LICENSE
+
+servers:
+  - url: https://master-hi-dt-psi1104.endpoint.ainize.ai//
+
+paths:
+  /predict:
+    post:
+      requestBody:
+        required: true
+        description: "High-Resolution Daytime Translation Without Domain Labels"
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                daytime:
+                  type: string
+                  enum: [hard_day, semihard_day, day, day2, presunset, sunset_hard_harder,
+                          sunsetred, 2minute, 5minute, bluehour_hard, bluehour_bit_dark, night,
+                          night2, darknight, another_night, onemorenight, nightmore]
+                source:
+                  type: string
+                  format: binary
+
+                inference_size:
+                  type: string
+                  enum: [256,512,1024,0]
+            encoding:
+              files:
+                contentType: image/*
+
+      responses:
+        '200':
+          description: success
+          content:
+            images/*:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad Request
+
+        '500':
+          description: Server side error
