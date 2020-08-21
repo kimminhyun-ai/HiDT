@@ -43,7 +43,7 @@ style_transformer_1024 = StyleTransformer(config_path,
 #########################################################
 requests_queue = Queue()
 #########################################################
-app = Flask(__name__, template_folder="./static/")
+app = Flask(__name__, template_folder='templates', static_url_path='/static')
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 
 BATCH_SIZE=1
@@ -61,11 +61,6 @@ def select_model(inference_size):
     elif inference_size == 1024:
         model = style_transformer_1024
 
-    else:
-        model = StyleTransformer(config_path,
-                                gen_weights_path,
-                                inference_size=inference_size,
-                                device=device)
     return model
 
 #run model

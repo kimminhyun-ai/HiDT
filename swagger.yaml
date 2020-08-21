@@ -41,7 +41,7 @@ paths:
 
                 inference_size:
                   type: string
-                  enum: [256,512,1024,0]
+                  enum: ['256','512','1024','0']
             encoding:
               files:
                 contentType: image/*
