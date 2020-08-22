@@ -17,7 +17,7 @@
 
                 <h1>HiDT</h1>
                 <h3>High-Resolution Daytime Translation. Try it!</h3>
-                <A>Git Hub repository : </A> <A href="https://github.com/psi1104/HiDT"> HiDT repo</A>
+                <A>GitHub repository : </A> <A href="https://github.com/psi1104/HiDT"> HiDT repo</A>
                 <br>
                 <A>Open API : </A> <A href="https://ainize.ai/psi1104/HiDT?branch=master"> on Ainize </A>
 
@@ -31,10 +31,12 @@
                     <p>4. Press the Run button and wait for about 5 seconds to get the result.</p>
                 </div>
                 <div id="sample" style="margin-top: 10px; margin-bottom: 10px;">
-                    <img id="sample1" style="display: inline-block; margin-bottom: 20px; max-width: 100%;"  src="{{url_for('static', filename='sample_night6.jpg')}}">
+                    <img id="sample1" style="display: inline-block; margin-bottom: 20px; max-width: 100%;"  src="{{url_for('static', filename='sample.jpg')}}">
                     <br>
                     <img id="sample2" style="display: inline-block; max-width: 100%;"  src="{{url_for('static', filename='demo.gif')}}">
                 </div>
+
+                <hr class="solid">
                 <h2>Let’s try </h2>
                 <div id = "selectDaytime">
                     <label for="daytime">Choose a daytime:</label>
@@ -64,13 +66,12 @@
                     <label><input type="radio" name="selectOutputSize" value="1024" /> 1024 </label>
                     <p>* Keep the original ratio of the image as much as possible, and the short length of the image weight or height matches the selected size.</p>
                     <p>* And the size should be smaller than the short length of the image height or weight.</p>
-                    <p>* Accounting to the size of the image option may take a few more seconds.</p>
                 </div>
                 <div id="sampleBox" style="margin-bottom: 5px;">
                     <p style="display:inline">Sample : </p>
-                    <a href="{{url_for('static', filename='sample1.jpg')}}" download target="blank">Sample Image1</a>
+                    <a download="sample1.jpg" href="/static/sample1.jpg'"  target="blank">Sample Image1</a>
                     &nbsp;&nbsp;&nbsp;
-                    <a href="{{url_for('static', filename='sample2.jpg')}}" download target="blank">Sample Image2</a>
+                    <a download="sample2.jpg" href="/static/sample2.jpg" target="blank">Sample Image2</a>
                 </div>
                 <div id = 'inputImage'>
                     <label for="source"> Upload image : </label>
@@ -79,7 +80,7 @@
                     <button id = "submit" type='submit' onclick="this.disabled=true;" class="btn btn-primary btn-lg" style="margin-left: auto;"> Run </button>
                 </div>
 
-                <div id ='resultBox' style="margin-left: auto; margin-right: auto;">
+                <div id ='resultBox' style="margin-left: auto; margin-right: auto; margin-bottom: 40px">
                     <p id='errorbox'></p>
                     <img id='resultImage' src="{{url_for('static', filename='intro.jpg')}}" style="max-width:100%; max-height:100%;">
                 </div>
