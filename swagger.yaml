@@ -32,16 +32,16 @@ paths:
               properties:
                 daytime:
                   type: string
-                  enum: [hard_day, semihard_day, day, day2, presunset, sunset_hard_harder,
-                          sunsetred, 2minute, 5minute, bluehour_hard, bluehour_bit_dark, night,
-                          night2, darknight, another_night, onemorenight, nightmore]
+                  enum: [day2, hard_day, semihard_day, day, presunset, 2minute,
+                         sunset_hard_harder, sunsetred, bluehour_hard, bluehour_bit_dark,
+                         night2, night, darknight, another_night, onemorenight, nightmore]
                 source:
                   type: string
                   format: binary
 
                 inference_size:
                   type: string
-                  enum: ['256','512','1024','0']
+                  enum: ['256','512','1024']
             encoding:
               files:
                 contentType: image/*
