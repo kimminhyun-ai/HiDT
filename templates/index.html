@@ -76,13 +76,19 @@
                 <div id = 'inputImage'>
                     <label for="source"> Upload image : </label>
                     <input type = 'file' id = 'source' style="margin-right: 10px; margin-bottom: 10px;">
-                    <p>* Please upload an image file that is less than 2MB.</p>
+                    <p>* Please upload an image file that is less than 10MB.</p>
                     <button id = "submit" type='submit' onclick="this.disabled=true;" class="btn btn-primary btn-lg" style="margin-left: auto;"> Run </button>
                 </div>
 
                 <div id ='resultBox' style="margin-left: auto; margin-right: auto; margin-bottom: 40px">
                     <p id='errorbox'></p>
-                    <img id='resultImage' src="{{url_for('static', filename='intro.jpg')}}" style="max-width:100%; max-height:100%;">
+                    <img id='resultImage' src="{{url_for('static', filename='intro.jpg')}}" style="max-width:100%; max-height:100%; margin-bottom: 10px">
+                    <a href= "" id="down" download style="display: none; margin-top: 10px">
+                        <button class="btn btn-primary btn-lg">
+                            <i class="download icon"></i>
+                            Download
+                        </button>
+                    </a>
                 </div>
                 
                 <div id="badge" OnClick="location.href='https://join.slack.com/t/ainetwork-dev/shared_invite/zt-c89mb8z9-IqaCsNmsNLXKNylKXrJTTg'"
@@ -128,6 +134,7 @@
                     document.getElementById("submit").onclick = () => {
                         document.getElementById("submit").disabled = true;
                         document.getElementById("errorbox").innerHTML = "";
+                        document.getElementById("down").style.display = "none";
                         const formData = new FormData();
                         try{
                             if (document.querySelector('input[name=selectOutputSize]:checked') == null){
@@ -162,7 +169,7 @@
                                 return response
                             }
                             else if( response.status == 413){
-                                throw Error("This image file is larger than 2MB.")
+                                throw Error("This image file is larger than 10MB.")
                             }
                             else{
                                 throw Error((await response.clone().json()).message)
@@ -174,6 +181,8 @@
                             document.getElementById("resultImage").src = imageURL;
                             document.getElementById("errorbox").innerHTML = "";
                             document.getElementById("submit").disabled = false;
+                            document.getElementById("down").setAttribute('href', imageURL);
+                            document.getElementById("down").style.display = "inline";
                         })
                         .catch(e =>{
                             document.getElementById("errorbox").innerHTML = e;

@@ -44,7 +44,7 @@ style_transformer_1024 = StyleTransformer(config_path,
 requests_queue = Queue()
 #########################################################
 app = Flask(__name__, template_folder='templates', static_url_path='/static')
-app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 
 BATCH_SIZE=1
 CHECK_INTERVAL=0.1
