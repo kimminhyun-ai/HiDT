@@ -25,6 +25,26 @@ with open(styles_path) as f:
 styles = {style.split(',')[0]: torch.tensor([float(el) for el in style.split(',')[1][1:-1].split(' ')]) for style in
           styles.split('\n')[:-1]}
 
+daytime_dict = {
+    "day1":"day2",
+    "day2":"hard_day",
+    "day3":"semihard_day",
+    "day4":"day",
+    "sunset1":"presunset",
+    "sunset2":"2minute",
+    "sunset3":"sunset_hard_harder",
+    "sunset4":"sunsetred",
+    "bluehour1":"bluehour_hard",
+    "bluehour2":"bluehour_bit_dark",
+    "night1":"night2",
+    "night2":"night",
+    "night3":"darknight",
+    "night4":"another_night",
+    "night5":"onemorenight",
+    "night6":"nightmore"
+}
+
+
 #########################################################
 style_transformer_256 = StyleTransformer(config_path,
                                      gen_weights_path,
@@ -123,7 +143,7 @@ def predict():
         return jsonify({'message': 'Too Many Requests'}), 429
 
     input_file = request.files['source']
-    daytime = request.form['daytime']
+    daytime = daytime_dict[request.form['daytime']]
     inference_size = int(request.form['inference_size'])
 
     if input_file.content_type not in ['image/jpeg', 'image/jpg', 'image/png']:
