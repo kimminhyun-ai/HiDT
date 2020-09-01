@@ -17,7 +17,7 @@ info:
     url: https://github.com/saic-mdal/HiDT/blob/master/LICENSE
 
 servers:
-  - url: https://master-hi-dt-psi1104.endpoint.ainize.ai//
+  - url: https://master-hi-dt-psi1104.endpoint.ainize.ai
 
 paths:
   /predict:
