@@ -1,4 +1,5 @@
 import io
+import sys
 
 import threading
 import time
@@ -12,6 +13,10 @@ from torchvision import transforms
 
 from hidt.style_transformer import StyleTransformer
 
+if torch.cuda.is_available():
+    pass
+else:
+    sys.exit('GPU is not available')
 
 config_path = './configs/daytime.yaml'
 gen_weights_path = './trained_models/generator/daytime.pt'
