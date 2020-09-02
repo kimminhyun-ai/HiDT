@@ -91,7 +91,14 @@ def select_model(inference_size):
 #run model
 def run(input_file, daytime, inference_size):
 
-    image = Image.open(input_file)
+    pil_image = Image.open(input_file)
+
+    if pil_image.mode == "RGBA":
+        image = Image.new("RGB", pil_image.size, (255, 255, 255))
+        image.paste(pil_image, mask=pil_image.split()[3])
+    else:
+        image = pil_image.convert('RGB')
+
     width, height = image.size
 
     if inference_size == 0:
