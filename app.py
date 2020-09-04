@@ -1,5 +1,6 @@
 import io
 import sys
+import json
 
 import threading
 import time
@@ -22,6 +23,7 @@ config_path = './configs/daytime.yaml'
 gen_weights_path = './trained_models/generator/daytime.pt'
 enhancer_weights = './trained_models/enhancer/enhancer.pth'
 styles_path = './styles.txt'
+daytime_path = './daytime.json'
 device = 'cuda'
 
 ########################################################
@@ -30,26 +32,8 @@ with open(styles_path) as f:
 styles = {style.split(',')[0]: torch.tensor([float(el) for el in style.split(',')[1][1:-1].split(' ')]) for style in
           styles.split('\n')[:-1]}
 
-daytime_dict = {
-    "day1":"day2",
-    "day2":"hard_day",
-    "day3":"semihard_day",
-    "day4":"day",
-    "sunset1":"presunset",
-    "sunset2":"2minute",
-    "sunset3":"sunset_hard_harder",
-    "sunset4":"sunsetred",
-    "bluehour1":"bluehour_hard",
-    "bluehour2":"bluehour_bit_dark",
-    "night1":"night2",
-    "night2":"night",
-    "night3":"darknight",
-    "night4":"another_night",
-    "night5":"onemorenight",
-    "night6":"nightmore"
-}
-
-
+with open(daytime_path) as f:
+    daytime_dict = json.load(f)
 #########################################################
 style_transformer_256 = StyleTransformer(config_path,
                                      gen_weights_path,
@@ -66,6 +50,11 @@ style_transformer_1024 = StyleTransformer(config_path,
                                      inference_size=1024,
                                      device=device)
 #########################################################
+style_transformer_dict = {
+    256: style_transformer_256,
+    512: style_transformer_512,
+    1024: style_transformer_1024
+}
 requests_queue = Queue()
 #########################################################
 app = Flask(__name__, template_folder='templates', static_url_path='/static')
@@ -74,50 +63,42 @@ app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 BATCH_SIZE=1
 CHECK_INTERVAL=0.1
 
-#select model
-def select_model(inference_size):
-
-    if inference_size == 256:
-        model = style_transformer_256
-
-    elif inference_size == 512:
-        model = style_transformer_512
-
-    elif inference_size == 1024:
-        model = style_transformer_1024
-
-    return model
-
 #run model
 def run(input_file, daytime, inference_size):
 
-    pil_image = Image.open(input_file)
+    try:
+        pil_image = Image.open(input_file)
 
-    if pil_image.mode == "RGBA":
-        image = Image.new("RGB", pil_image.size, (255, 255, 255))
-        image.paste(pil_image, mask=pil_image.split()[3])
-    else:
-        image = pil_image.convert('RGB')
+        if pil_image.mode == "RGBA":
+            image = Image.new("RGB", pil_image.size, (255, 255, 255))
+            image.paste(pil_image, mask=pil_image.split()[3])
+        else:
+            image = pil_image.convert('RGB')
 
-    width, height = image.size
+        width, height = image.size
 
-    if inference_size == 0:
-        inference_size = min(width, height)
+        if inference_size == 0:
+            inference_size = min(width, height)
 
-    style_transformer = select_model(inference_size)
+        style_transformer = style_transformer_dict[inference_size]
 
-    style_to_transfer = styles[daytime]
-    style_to_transfer = style_to_transfer.view(1, 1, 3, 1).to(device)
-    with torch.no_grad():
-        content_decomposition = style_transformer.get_content(image)[0]
-        decoder_input = {'content': content_decomposition['content'],
-                         'intermediate_outputs': content_decomposition['intermediate_outputs'],
-                         'style': style_to_transfer}
-        transferred = style_transformer.trainer.gen.decode(decoder_input)['images']
+        style_to_transfer = styles[daytime]
+        style_to_transfer = style_to_transfer.view(1, 1, 3, 1).to(device)
 
-    pil_img = transforms.ToPILImage()((transferred[0].cpu().clamp(-1, 1) + 1.) / 2.)
+        with torch.no_grad():
+            content_decomposition = style_transformer.get_content(image)[0]
+            decoder_input = {'content': content_decomposition['content'],
+                             'intermediate_outputs': content_decomposition['intermediate_outputs'],
+                             'style': style_to_transfer}
+            transferred = style_transformer.trainer.gen.decode(decoder_input)['images']
 
-    return pil_img
+        pil_img = transforms.ToPILImage()((transferred[0].cpu().clamp(-1, 1) + 1.) / 2.)
+
+        return pil_img
+
+    except Exception as e:
+        print(e)
+        return 500
 
 def handle_requests_by_batch():
     try:
@@ -150,33 +131,41 @@ threading.Thread(target=handle_requests_by_batch).start()
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    print(requests_queue.qsize())
-    if requests_queue.qsize() >= 1:
-        return jsonify({'message': 'Too Many Requests'}), 429
+    try:
+        print(requests_queue.qsize())
+        if requests_queue.qsize() >= 1:
+            return jsonify({'message': 'Too Many Requests'}), 429
 
-    input_file = request.files['source']
-    daytime = daytime_dict[request.form['daytime']]
-    inference_size = int(request.form['inference_size'])
+        input_file = request.files['source']
+        daytime = daytime_dict[request.form['daytime']]
+        inference_size = int(request.form['inference_size'])
 
-    if input_file.content_type not in ['image/jpeg', 'image/jpg', 'image/png']:
-        return jsonify({'message': 'Only support jpeg, jpg or png'}), 400
-    
-    req = {
-        'input': [input_file, daytime, inference_size]
-    }
+        if input_file.content_type not in ['image/jpeg', 'image/jpg', 'image/png']:
+            return jsonify({'message': 'Only support jpeg, jpg or png'}), 400
 
-    requests_queue.put(req)
+        req = {
+            'input': [input_file, daytime, inference_size]
+        }
 
-    while 'output' not in req:
-        time.sleep(CHECK_INTERVAL)
+        requests_queue.put(req)
 
-    pil_img = req['output']
+        while 'output' not in req:
+            time.sleep(CHECK_INTERVAL)
 
-    result = io.BytesIO()
-    pil_img.save(result, 'JPEG', quality=95)
-    result.seek(0)
+        if req['output'] == 500:
+            raise Exception
 
-    return send_file(result, mimetype='image/jpeg')
+        pil_img = req['output']
+
+        result = io.BytesIO()
+        pil_img.save(result, 'JPEG', quality=95)
+        result.seek(0)
+
+        return send_file(result, mimetype='image/jpeg')
+
+    except Exception as e:
+        print(e)
+        return jsonify({'message': 'Server error'}), 500
 
 @app.route('/health')
 def health():
